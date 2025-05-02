@@ -6,7 +6,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,6 +18,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -40,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
@@ -56,6 +59,8 @@ import com.dng.remindapp.model.Note
 import com.dng.remindapp.model.Todo
 import com.dng.remindapp.model.commonmodel.DialogModel
 import com.dng.remindapp.navigation.FabOptionItem
+import com.dng.remindapp.util.numberToCurrencyFormat
+import com.dng.remindapp.util.numberToSimpleMoneyFormat
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,17 +111,82 @@ fun CommonConfirmDialog(
                 Text(dialogModel.title, fontWeight = FontWeight.Bold, maxLines = 1)
                 Text(dialogModel.description, maxLines = 4)
                 Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TextButton(
-                        onClick = { dialogModel.onDismiss() },
-                        border = BorderStroke(1.dp, Color.Red)
-                    ) { Text("Cancel") }
+                        onClick = { dialogModel.onDismiss() }
+                    ) { Text("CANCEL", color = Color.Blue) }
                     TextButton(
                         onClick = { dialogModel.onConfirm() }
-                    ) { Text("OK") }
+                    ) { Text("DELETE", color = Color.Red) }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun WalletBalance(
+    totalIncome: Double,
+    totalOutcome: Double,
+    modifier: Modifier = Modifier
+) {
+    val balance = totalIncome - totalOutcome
+    var showBalance by remember { mutableStateOf(true) }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Row {
+            Text(
+                text = if (showBalance) numberToCurrencyFormat(balance) else "*******",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
+            )
+            Icon(
+                if (showBalance) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                tint = Color.White,
+                contentDescription = "Show balance",
+                modifier = Modifier
+                    .padding(
+                        start = 5.dp
+                    )
+                    .clickable {
+                        showBalance = !showBalance
+                    })
+        }
+        Text(stringResource(R.string.wallet_card_title), color = Color.White)
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+
+                    top = 5.dp
+                )
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Pendapatan", color = Color.White)
+                Text(
+                    stringResource(R.string.income, numberToSimpleMoneyFormat(totalIncome)),
+                    style = TextStyle(
+                        color = Color.Green
+                    )
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Pengeluaran", color = Color.White)
+                Text(
+                    stringResource(R.string.expenses, numberToSimpleMoneyFormat(totalOutcome)),
+                    style = TextStyle(
+                        color = Color.Red
+                    )
+                )
             }
         }
     }
@@ -128,17 +198,25 @@ fun WalletCard(
     totalOutcome: Double,
     modifier: Modifier = Modifier
 ) {
+    val balance = totalIncome - totalOutcome
     Card(modifier = modifier) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .background(colorResource(R.color.extra_dark_gray))
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            colorResource(R.color.extra_dark_gray),
+                            colorResource(R.color.navy)
+                        )
+                    )
+                )
                 .fillMaxWidth()
                 .padding(10.dp)
         ) {
             Text(stringResource(R.string.wallet_card_title), color = Color.White)
             Text(
-                stringResource(R.string.balance, totalIncome - totalOutcome),
+                numberToCurrencyFormat(balance),
                 style = TextStyle(
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
@@ -150,13 +228,13 @@ fun WalletCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    stringResource(R.string.income, totalIncome.toString()),
+                    stringResource(R.string.income, numberToSimpleMoneyFormat(totalIncome)),
                     style = TextStyle(
                         color = Color.Green
                     )
                 )
                 Text(
-                    stringResource(R.string.expenses, totalOutcome.toString()),
+                    stringResource(R.string.expenses, numberToSimpleMoneyFormat(totalOutcome)),
                     style = TextStyle(
                         color = Color.Red
                     )

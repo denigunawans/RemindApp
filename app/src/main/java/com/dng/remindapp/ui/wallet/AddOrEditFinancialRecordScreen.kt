@@ -2,29 +2,32 @@ package com.dng.remindapp.ui.wallet
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -41,7 +44,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
@@ -67,7 +73,14 @@ fun AddOrEditFinancialRecordScreen(
 
     var iDesc by remember { mutableStateOf(record?.desc ?: "") }
     var iCategory by remember { mutableStateOf(record?.category ?: "") }
-    var iNomial by remember { mutableIntStateOf(record?.nominal ?: 0) }
+//    var iNomial by remember { mutableIntStateOf(record?.nominal ?: 0) }
+    var iNomial by remember { mutableStateOf(
+        if (record != null){
+            "Rp. ${record.nominal}"
+        }else{
+            "Rp. "
+        })
+    }
     var iDate by remember {
         mutableStateOf(
             record?.date ?: Instant.now().toEpochMilli().convertMillisToDateFormat()
@@ -114,7 +127,11 @@ fun AddOrEditFinancialRecordScreen(
                             val recordTmp = FinancialRecord(
                                 id = record?.id ?: 0,
                                 date = iDate,
-                                nominal = iNomial,
+                                nominal = if (iNomial.replace("[^0-9]".toRegex(), "").isNotBlank()){
+                                    iNomial.replace("[^0-9]".toRegex(), "").toInt()
+                                }else{
+                                    0
+                                },
                                 category = iCategory,
                                 isIncome = isIncome,
                                 desc = iDesc
@@ -152,20 +169,53 @@ fun AddOrEditFinancialRecordScreen(
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TypeRecordButton(
-                isIncome = isIncome,
-                isIncomeClick = {
-                    isIncome = it
+            TypeRecordButton(modifier = Modifier.fillMaxWidth(0.7f)) {
+                isIncome = it
+            }
+
+            TextField(
+                value = iNomial,
+                onValueChange = {
+                    iNomial = it
+//                    iNomial = if (it.substring(4, it.length-1).isDigitsOnly() && it.isNotEmpty()) {
+//                        it.substring(4, it.length-1).toIntOrNull() ?: 0
+//                    } else {
+//                        0
+//                    }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp)
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                textStyle = TextStyle(
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.padding(top = 30.dp)
             )
-            OutlinedTextField(
+
+            Row {
+                FilledTonalButton(onClick = {
+                    expandedDropDown = !expandedDropDown
+                }) {
+                    Text("Category")
+                }
+                FilledTonalIconButton(modifier = Modifier.padding(start = 4.dp), onClick = {
+                    showAddCategoryDialog = true
+                }) {
+                    Icon(Icons.Filled.Add, contentDescription = "add new category")
+                }
+            }
+
+            TextField(
                 value = iDate,
                 onValueChange = { iDate = it.toLong().convertMillisToDateFormat() },
                 readOnly = true,
-                label = { Text("Select Date") },
+                placeholder = { Text("Select Date") },
                 trailingIcon = {
                     IconButton(onClick = { showDatePicker = !showDatePicker }) {
                         Icon(
@@ -174,36 +224,19 @@ fun AddOrEditFinancialRecordScreen(
                         )
                     }
                 },
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
                 modifier = Modifier
+                    .padding(top = 30.dp)
                     .fillMaxWidth()
+                    .border(
+                        border = BorderStroke(1.dp, Color.LightGray),
+                        shape = RoundedCornerShape(50)
+                    )
             )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = iCategory,
-                    onValueChange = { iCategory = it },
-                    readOnly = true,
-                    placeholder = { Text("Category") },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = if (expandedDropDown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Select category",
-                            modifier = Modifier.clickable { expandedDropDown = !expandedDropDown })
-                    },
-                    label = { Text("Category") },
-                    modifier = Modifier.weight(1f)
-                )
-                Button(
-                    onClick = {
-                        showAddCategoryDialog = true
-                    },
-                    modifier = Modifier.padding(4.dp)
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "add new category")
-                }
-            }
 
             DropdownMenu(
                 expanded = expandedDropDown,
@@ -220,25 +253,22 @@ fun AddOrEditFinancialRecordScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = iNomial.toString(),
-                onValueChange = {
-                    if (it.isDigitsOnly()) {
-                        iNomial = it.toInt()
-                    }
-                },
-                label = { Text("Input nominal") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-
-            OutlinedTextField(
+            TextField(
                 value = iDesc,
                 onValueChange = { iDesc = it },
-                label = { Text("Input description") },
+                placeholder = { Text("Add description...") },
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
                 modifier = Modifier
+                    .padding(top = 5.dp)
                     .fillMaxWidth()
+                    .border(
+                        border = BorderStroke(1.dp, Color.LightGray),
+                        shape = RoundedCornerShape(50)
+                    )
             )
 
             if (showDatePicker) {
@@ -256,51 +286,11 @@ fun AddOrEditFinancialRecordScreen(
     }
 }
 
-@Composable
-fun TypeRecordButton(
-    isIncome: Boolean,
-    isIncomeClick: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-
-    Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = modifier) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .weight(1f)
-                .background(if (isIncome) Color.Green else Color.LightGray)
-                .clickable {
-                    isIncomeClick(true)
-                }) {
-            Text(
-                "Income", style = TextStyle(
-                    fontSize = 16.sp
-                )
-            )
-        }
-
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .weight(1f)
-                .background(if (!isIncome) Color.Red else Color.LightGray)
-                .clickable {
-                    isIncomeClick(false)
-                }) {
-            Text(
-                "Outcome", style = TextStyle(
-                    fontSize = 16.sp
-                )
-            )
-        }
-    }
-}
-
 fun FinancialRecord.checkRecordIsValid(): Pair<Boolean, String> {
     return when {
+        this.nominal < 1 -> Pair(false, "Input nominal")
         this.category.isBlank() -> Pair(false, "Select category")
         this.desc.isBlank() -> Pair(false, "Input description")
-        this.nominal < 1 -> Pair(false, "Input nominal")
         else -> Pair(true, "Success")
     }
 }

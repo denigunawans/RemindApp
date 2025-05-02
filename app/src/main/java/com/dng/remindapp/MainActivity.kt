@@ -211,7 +211,7 @@ class MainActivity : ComponentActivity() {
                         CommonConfirmDialog(
                             dialogModel = dialogModel.value,
                             modifier = Modifier
-                                .fillMaxWidth(0.7f)
+                                .fillMaxWidth(0.8f)
                                 .padding(8.dp)
                         )
                     }
@@ -299,9 +299,11 @@ class MainActivity : ComponentActivity() {
                             },
                                 onAddRecord = {
                                     financialRecordViewModel.insertRecord(it)
+                                    navController.popBackStack()
                                 },
                                 onUpdateRecord = {
                                     financialRecordViewModel.updateRecord(it)
+                                    navController.popBackStack()
                                 },
                                 onAddCategory = {
                                     financialRecordViewModel.insertCategory(it)
@@ -343,6 +345,7 @@ class MainActivity : ComponentActivity() {
                                     onConfirm = {
                                         notesViewModel.deleteNote(it)
                                         showConfirmDialog.value = false
+                                        navController.popBackStack()
                                     },
                                     onDismiss = {
                                         showConfirmDialog.value = false

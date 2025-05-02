@@ -81,7 +81,7 @@ fun NoteScreen(
 
         when {
             noteViewModel.state.value.isEmpty() -> {
-                Text(text = "Todolist is empty")
+                Text(text = "Note is empty")
             }
 
             isList -> {

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.dng.remindapp.model.Note
 import com.dng.remindapp.model.Todo
 import com.dng.remindapp.ui.TodoItem
+import com.dng.remindapp.ui.WalletBalance
 import com.dng.remindapp.ui.WalletCard
 import com.dng.remindapp.ui.notes.NoteGridItem
 import com.dng.remindapp.util.convertMillisToDateFormat
@@ -122,6 +123,8 @@ fun HomeScreen(
                     )
                 }
             }
+        }else{
+            Text("No Notes")
         }
     }
 }

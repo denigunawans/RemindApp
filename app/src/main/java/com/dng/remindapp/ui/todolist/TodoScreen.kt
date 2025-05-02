@@ -66,7 +66,6 @@ fun TodoScreen(
                 todolist = todolist,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.LightGray)
             )
             HorizontalDivider(thickness = 2.dp, color = Color.DarkGray)
             ListTodo(
@@ -82,7 +81,6 @@ fun TodoScreen(
             Box(
                 contentAlignment = Alignment.Center, modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
             ) {
                 Text(
                     "No todo found"
